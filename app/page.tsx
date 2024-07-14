@@ -1,95 +1,61 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+import React, { useState, useEffect } from "react";
+import CharacterCard from "./components/characterCard";
+import Header from "./components/header";
+import { fetchCharacters } from "./utils/api/request/starWars";
+import styled from "styled-components";
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+const Container = styled.div`
+   padding: 20px;
+`;
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+const SearchInput = styled.input`
+   margin-bottom: 20px;
+   padding: 10px;
+   width: 100%;
+   max-width: 500px;
+`;
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+const CharacterList = styled.div`
+   display: flex;
+   flex-wrap: wrap;
+   gap: 10px;
+`;
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
+const Home: React.FC = () => {
+   const [characters, setCharacters] = useState([]);
+   const [searchTerm, setSearchTerm] = useState("");
+   const [page, setPage] = useState(1);
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
-}
+   useEffect(() => {
+      const getCharacters = async () => {
+         const data = await fetchCharacters(searchTerm, page);
+         setCharacters(data.results);
+      };
+      getCharacters();
+   }, [searchTerm, page]);
+
+   return (
+      <Container>
+         <Header />
+         <SearchInput
+            type="text"
+            placeholder="Search characters..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+         />
+         <CharacterList>
+            {characters.map((character, i) => (
+               <CharacterCard key={i} character={character} />
+            ))}
+         </CharacterList>
+         <button onClick={() => setPage(page - 1)} disabled={page === 1}>
+            Previous
+         </button>
+         <button onClick={() => setPage(page + 1)}>Next</button>
+      </Container>
+   );
+};
+
+export default Home;
